@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { buildPiece, pieceMaterials } from './pieces.js';
+import { buildPiece, pieceMaterials } from './pieces.js?v=10';
 
 /* ---------- ПРЕСЕТЫ КАЧЕСТВА ---------- */
 const PRESETS = {
