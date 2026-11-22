@@ -459,7 +459,7 @@ function requestAIMove(state, level){
     };
     aiPending.set(id, done);
     w.postMessage({ id, state, level });
-    setTimeout(() => done(null), 7000);
+    setTimeout(() => done(null), 2400);
   });
 }
 
