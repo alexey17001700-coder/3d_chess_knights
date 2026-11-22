@@ -455,12 +455,8 @@ function wireUI(){
     applyQuality();
   });
 
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    applyDPR();
-  });
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('orientationchange', () => setTimeout(handleResize, 260));
 }
 
 /* ---------- СТАРТ ---------- */
