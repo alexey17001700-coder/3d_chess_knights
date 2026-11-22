@@ -466,7 +466,17 @@ function requestAIMove(state, level){
 function setThinking(on){
   aiThinking = on;
   const el = document.getElementById('think');
-  if (el) el.classList.toggle('on', on);
+  if (!el) return;
+  el.textContent = 'ИИ ДУМАЕТ…';
+  el.classList.toggle('on', on);
+}
+
+/* живой прогресс счёта: видно, что ИИ работает, а не висит */
+function showDepth(info){
+  if (!aiThinking || !info) return;
+  const el = document.getElementById('think');
+  if (!el) return;
+  el.textContent = 'ИИ ДУМАЕТ… ГЛУБИНА ' + (info.depth || 1);
 }
 
 async function maybeAI(){
