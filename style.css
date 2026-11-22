@@ -149,3 +149,120 @@ html,body{
   #hint{display:none}
   .win{max-height:97dvh}
 }
+
+/* ============================================================
+   ЭТАП 2 — ИГРОВОЙ ИНТЕРФЕЙС
+   ============================================================ */
+
+/* индикатор хода */
+.turn{
+  top:calc(74px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));
+  display:flex;align-items:center;gap:8px;color:#eaf6ff;font-weight:700;letter-spacing:1.6px}
+.turn .dot{
+  width:11px;height:11px;border-radius:50%;flex:0 0 11px;
+  background:#f6efdc;box-shadow:0 0 12px rgba(246,239,220,.9);
+  transition:all .25s ease}
+.turn.black .dot{background:#2b3340;box-shadow:0 0 12px rgba(120,170,220,.75);
+  border:1px solid rgba(160,210,255,.6)}
+
+#status{
+  top:calc(74px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));
+  transform:translateX(0);color:#8fa8bd;font-size:11px;display:none}
+#status.warn{color:#ffb4c8;border-color:rgba(255,110,150,.55);
+  box-shadow:0 0 18px rgba(255,80,130,.28)}
+
+/* нижняя панель кнопок */
+#bar{
+  position:absolute;left:50%;transform:translateX(-50%);
+  bottom:calc(10px + env(safe-area-inset-bottom));
+  display:flex;gap:7px;pointer-events:auto;max-width:96vw}
+.bbtn{
+  padding:11px 14px;border-radius:11px;font-family:inherit;cursor:pointer;
+  font-size:11px;letter-spacing:1.4px;font-weight:700;color:#9fd8f5;
+  background:rgba(8,16,28,.72);border:1px solid rgba(90,190,255,.30);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  transition:all .16s ease;white-space:nowrap}
+.bbtn:active{transform:scale(.93);background:rgba(30,80,130,.8);color:#e6faff}
+.bbtn.big{padding:13px 26px;font-size:12px;letter-spacing:2px}
+
+/* история ходов */
+#moveList{
+  position:absolute;top:calc(112px + env(safe-area-inset-top));
+  right:calc(10px + env(safe-area-inset-right));
+  width:min(190px,46vw);max-height:46vh;display:flex;flex-direction:column;
+  background:rgba(8,16,28,.78);border:1px solid rgba(90,190,255,.28);
+  border-radius:12px;overflow:hidden;pointer-events:auto;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  opacity:0;transform:translateX(16px);pointer-events:none;
+  transition:opacity .25s ease,transform .25s ease}
+#moveList.on{opacity:1;transform:translateX(0);pointer-events:auto}
+.mlHead{display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-bottom:1px solid rgba(90,190,255,.18);
+  font-size:10px;letter-spacing:1.6px;color:#7fd4ff}
+.mlHead span{flex:1}
+.mlHead button{width:26px;height:26px;border-radius:7px;font-family:inherit;
+  background:rgba(255,80,80,.12);border:1px solid rgba(255,110,110,.4);
+  color:#ff9a9a;font-size:12px;cursor:pointer}
+#moves{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 8px;
+  touch-action:pan-y;overscroll-behavior:contain}
+.mv{display:grid;grid-template-columns:26px 1fr 1fr;gap:4px;
+  font-size:11.5px;color:#bcd6e8;padding:3px 2px;border-radius:6px}
+.mv:nth-child(odd){background:rgba(90,190,255,.05)}
+.mv b{color:#5f7f99;font-weight:400}
+
+/* окно превращения пешки */
+#promo{
+  position:fixed;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;
+  padding:16px;background:rgba(3,7,14,.78);
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  opacity:0;pointer-events:none;transition:opacity .25s ease}
+#promo.on{opacity:1;pointer-events:auto}
+.pwin{
+  width:min(420px,94vw);padding:18px;border-radius:16px;
+  background:linear-gradient(165deg,rgba(13,26,44,.98),rgba(5,10,19,.99));
+  border:1px solid rgba(90,190,255,.42);
+  box-shadow:0 0 60px rgba(40,140,230,.32);
+  transform:translateY(20px) scale(.94);transition:transform .3s cubic-bezier(.2,.9,.25,1.25)}
+#promo.on .pwin{transform:translateY(0) scale(1)}
+.ptitle{font-size:12px;letter-spacing:3px;color:#8fe4ff;text-align:center;margin-bottom:14px}
+.prow{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.pbtn{
+  padding:16px 10px;border-radius:12px;font-family:inherit;cursor:pointer;
+  font-size:12px;letter-spacing:1.6px;font-weight:700;color:#bfe8ff;
+  background:rgba(12,26,44,.75);border:1px solid rgba(90,190,255,.28);
+  transition:all .18s ease}
+.pbtn:active{transform:scale(.95);background:rgba(40,140,220,.4);color:#eafaff}
+
+/* баннер шаха / конца партии */
+#banner{
+  position:fixed;inset:0;z-index:44;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0;transition:opacity .3s ease}
+#banner.on{opacity:1}
+#banner.on .bwin{pointer-events:auto}
+.bwin{
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  padding:22px 30px;border-radius:16px;
+  background:rgba(8,16,28,.86);border:1px solid rgba(90,190,255,.4);
+  box-shadow:0 0 60px rgba(40,140,230,.35);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transform:scale(.92);transition:transform .3s cubic-bezier(.2,.9,.25,1.25)}
+#banner.on .bwin{transform:scale(1)}
+#bannerTxt{font-size:17px;letter-spacing:4px;color:#eaf6ff;font-weight:300;text-align:center}
+
+/* телефон */
+@media (max-width:620px),(max-height:640px){
+  .turn{top:calc(64px + env(safe-area-inset-top));font-size:10.5px;gap:6px;padding:6px 9px}
+  .turn .dot{width:9px;height:9px;flex:0 0 9px}
+  #bar{gap:5px;bottom:calc(8px + env(safe-area-inset-bottom))}
+  .bbtn{padding:10px 10px;font-size:10px;letter-spacing:1px;border-radius:10px}
+  .bbtn.big{padding:12px 20px;font-size:11px}
+  #moveList{top:calc(100px + env(safe-area-inset-top));width:min(170px,52vw);max-height:40vh}
+  .mv{font-size:10.5px;grid-template-columns:22px 1fr 1fr}
+  #bannerTxt{font-size:14px;letter-spacing:3px}
+  .pbtn{padding:14px 8px;font-size:11px}
+}
+
+@media (max-height:520px){
+  #moveList{max-height:34vh}
+  #hint{display:none}
+}
