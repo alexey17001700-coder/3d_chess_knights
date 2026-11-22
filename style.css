@@ -28,8 +28,8 @@ html,body{
   color:#7fd4ff;font-weight:600;max-width:56vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #fps{top:calc(42px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));
   color:#8fa8bd;font-size:11px}
-#qual{top:calc(10px + env(safe-area-inset-top));right:calc(58px + env(safe-area-inset-right));
-  color:#9fe8c8;font-weight:600;font-size:11px}
+#qual{top:calc(56px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));
+  color:#9fe8c8;font-weight:600;font-size:11px;text-align:right}
 
 #setBtn,#gameBtn{
   position:absolute;top:calc(10px + env(safe-area-inset-top));
