@@ -37,7 +37,7 @@ function loadCfg(){
     const d = JSON.parse(raw);
     if (d.opponent === 'ai' || d.opponent === 'human') cfg.opponent = d.opponent;
     if (d.side === 'w' || d.side === 'b') cfg.side = d.side;
-    if (['easy', 'medium', 'hard'].indexOf(d.level) >= 0) cfg.level = d.level;
+    if (['blitz', 'easy', 'medium', 'hard'].indexOf(d.level) >= 0) cfg.level = d.level;
     if (typeof d.sound === 'boolean') cfg.sound = d.sound;
     if (typeof d.hints === 'boolean') cfg.hints = d.hints;
   } catch (e){}
