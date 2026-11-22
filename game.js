@@ -548,10 +548,13 @@ function hideHint(){
 }
 
 function setView(side){
-  const d = Math.max(9, Math.hypot(camera.position.x, camera.position.z));
-  const y = camera.position.y;
-  camera.position.set(0, y, side === 'w' ? -d : d);
-  if (C.controls) C.controls.update();
+  if (C.fitCamera) C.fitCamera({ side, reset: true });
+  else {
+    const d = Math.max(9, Math.hypot(camera.position.x, camera.position.z));
+    const y = camera.position.y;
+    camera.position.set(0, y, side === 'w' ? -d : d);
+    if (C.controls) C.controls.update();
+  }
 }
 
 function newGame(){
