@@ -437,8 +437,15 @@ function mainThreadMove(state, level){
     setTimeout(async () => {
       try {
         const mod = await import('./ai.js');
-        res(mod.chooseMove(state, level));
-      } catch (e){ res(null); }
+        /* считаем на главном потоке — режем время, чтобы сцена не замерла */
+        globalThis.__aiTimeCap = 450;
+        const mv = mod.chooseMove(state, level);
+        globalThis.__aiTimeCap = 0;
+        res(mv);
+      } catch (e){
+        globalThis.__aiTimeCap = 0;
+        res(null);
+      }
     }, 40);
   });
 }
