@@ -465,6 +465,7 @@ function boot(){
   createRenderer();
   state.level = (state.mode === 'auto') ? detectLevel() : state.mode;
   applyQuality();
+  fitCamera({ reset: true });
   wireUI();
   syncUI();
   loop();
