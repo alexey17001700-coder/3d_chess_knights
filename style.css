@@ -166,8 +166,8 @@ html,body{
   border:1px solid rgba(160,210,255,.6)}
 
 #status{
-  top:calc(74px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));
-  transform:translateX(0);color:#8fa8bd;font-size:11px;display:none}
+  top:calc(112px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));
+  color:#8fa8bd;font-size:11px}
 #status.warn{color:#ffb4c8;border-color:rgba(255,110,150,.55);
   box-shadow:0 0 18px rgba(255,80,130,.28)}
 
