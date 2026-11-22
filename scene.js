@@ -63,9 +63,55 @@ function hudInsets(){
   }
   return { top: Math.min(top + 12, h * 0.17), bottom: Math.min(bottom + 12, h * 0.17) };
 }
-/* FIT_END */
+function cameraDistance(){
+  const t = controls ? controls.target : new THREE.Vector3(0, 0.6, 0);
+  return camera.position.distanceTo(t);
+}
 
-x
+function fitCamera(opts){
+  const o = opts || {};
+  const w = window.innerWidth || 1, h = window.innerHeight || 1;
+  const aspect = w / h;
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+
+  const vFov = THREE.MathUtils.degToRad(camera.fov);
+  const hFov = 2 * Math.atan(Math.tan(vFov / 2) * aspect);
+  const ins = hudInsets();
+  const usable = Math.max(FIT.minFill, (h - ins.top - ins.bottom) / h);
+
+  const dV = FIT.ry / (Math.tan(vFov * usable / 2) * FIT.fill);
+  const dH = FIT.rx / (Math.tan(hFov / 2) * FIT.fill);
+  const d = Math.max(FIT.minDist, Math.min(FIT.maxDist, Math.max(dV, dH)));
+
+  const keep = o.reset ? 1 : (fitDist > 0 ? cameraDistance() / fitDist : 1);
+  const dist = Math.max(d * 0.55, Math.min(d * 1.75, d * keep));
+
+  const t = controls ? controls.target.clone() : new THREE.Vector3(0, 0.6, 0);
+  const dir = new THREE.Vector3().subVectors(camera.position, t);
+  if (dir.lengthSq() < 0.0001) dir.set(0, 0.64, 1);
+  dir.normalize();
+  if (o.side) dir.set(0, 0.64, o.side === 'w' ? -1 : 1).normalize();
+
+  camera.position.copy(t).addScaledVector(dir, dist);
+  camera.lookAt(t);
+
+  if (controls){
+    controls.target.copy(t);
+    controls.minDistance = d * 0.55;
+    controls.maxDistance = d * 1.75;
+    controls.update();
+  }
+  fitDist = d;
+  return d;
+}
+
+function handleResize(){
+  if (!renderer) return;
+  renderer.setSize(window.innerWidth || 1, window.innerHeight || 1);
+  applyDPR();
+  fitCamera();
+}
 
 let renderer = null;
 let controls = null;
