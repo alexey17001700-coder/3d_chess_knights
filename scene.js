@@ -412,5 +412,12 @@ window.CHESS3D = {
   squareToWorld, TILE_TOP,
   setMode, applyQuality,
   get state(){ return state; },
-  get fps(){ return fps; }
+  get fps(){ return fps; },
+  get materials(){ return M; },
+  get seg(){ return PRESETS[state.level].seg; },
+  onFrame: null,
+  onPiecesRebuilt: null
 };
+
+/* ---------- ЭТАП 2: игровая логика ---------- */
+import('./game.js').catch(e => console.error('game.js:', e));
