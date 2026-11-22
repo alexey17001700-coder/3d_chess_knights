@@ -23,7 +23,37 @@
   <div class="panel" id="fps">-- FPS</div>
   <div class="panel" id="qual">ГРАФИКА: АВТО</div>
   <button id="setBtn" title="Настройки графики">⚙</button>
-  <div id="hint">Вращай сцену пальцем · щипок — приблизить</div>
+
+  <div class="panel turn" id="turn"><i class="dot"></i><span>ХОД БЕЛЫХ</span></div>
+  <div class="panel" id="status">ХОДОВ: 0</div>
+
+  <div id="bar">
+    <button class="bbtn" id="btnNew">НОВАЯ</button>
+    <button class="bbtn" id="btnUndo">ОТМЕНИТЬ</button>
+    <button class="bbtn" id="btnFlip">РАЗВЕРНУТЬ</button>
+    <button class="bbtn" id="btnList">ХОДЫ</button>
+  </div>
+
+  <div id="moveList">
+    <div class="mlHead"><span>ИСТОРИЯ ХОДОВ</span><button id="listClose">✕</button></div>
+    <div id="moves"></div>
+  </div>
+
+  <div id="hint">Тапни фигуру — покажу ходы · вращай сцену пальцем</div>
+</div>
+
+<div id="promo">
+  <div class="pwin">
+    <div class="ptitle">ВЫБЕРИ ФИГУРУ</div>
+    <div class="prow" id="promoRow"></div>
+  </div>
+</div>
+
+<div id="banner">
+  <div class="bwin">
+    <div id="bannerTxt">ШАХ!</div>
+    <button class="bbtn big" id="btnNew2">НОВАЯ ПАРТИЯ</button>
+  </div>
 </div>
 
 <div id="modal">
