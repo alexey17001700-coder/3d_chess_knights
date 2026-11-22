@@ -1,18 +1,50 @@
 /* ============================================================
    3D ШАХМАТЫ · РЫЦАРСКИЙ ТУРНИР — ИГРА
    ЭТАП 2: выбор фигуры, подсветка ходов, анимация перемещения,
-   взятие, превращение, история, отмена, конец партии.
+           взятие, превращение, история, отмена, конец партии.
+   ЭТАП 3: соперник-ИИ (три уровня, отдельный поток), звук,
+           выбор стороны, полировка под телефон.
    ============================================================ */
 
 import * as THREE from 'three';
 import { buildPiece } from './pieces.js';
 import * as CH from './chess.js';
+import * as SND from './sound.js';
 
 const C = window.CHESS3D;
 if (!C) throw new Error('CHESS3D не готов');
 
 const scene = C.scene;
 const camera = C.camera;
+
+/* ---------- НАСТРОЙКИ ПАРТИИ ---------- */
+const CFG_KEY = 'chess3d_game_v1';
+const cfg = {
+  opponent: 'human',   /* human | ai */
+  side: 'w',           /* за кого играет человек */
+  level: 'medium',     /* easy | medium | hard */
+  sound: true,
+  hints: true
+};
+
+function saveCfg(){
+  try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e){}
+}
+function loadCfg(){
+  try {
+    const raw = localStorage.getItem(CFG_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (d.opponent === 'ai' || d.opponent === 'human') cfg.opponent = d.opponent;
+    if (d.side === 'w' || d.side === 'b') cfg.side = d.side;
+    if (['easy', 'medium', 'hard'].indexOf(d.level) >= 0) cfg.level = d.level;
+    if (typeof d.sound === 'boolean') cfg.sound = d.sound;
+    if (typeof d.hints === 'boolean') cfg.hints = d.hints;
+  } catch (e){}
+}
+
+const aiOn = () => cfg.opponent === 'ai';
+const aiSide = () => (cfg.side === 'w' ? 'b' : 'w');
 
 /* ---------- СОСТОЯНИЕ ---------- */
 let engine = CH.initialState();
@@ -25,6 +57,7 @@ let legal = [];
 let lastMove = null;
 let busy = false;
 let gameOver = false;
+let aiThinking = false;
 
 /* ---------- МАРКЕРЫ ---------- */
 const markerGroup = new THREE.Group();
@@ -74,6 +107,8 @@ function drawMarkers(){
     s.position.z = CH.rankOf(selected) - 3.5;
     markerGroup.add(s);
   }
+
+  if (!cfg.hints) return;
 
   for (const m of legal){
     const isCap = !!engine.board[m.to] || (engine.board[selected] && engine.board[selected].t === 'p' && m.to === engine.ep);
@@ -258,6 +293,7 @@ function selectSquare(i){
 
 function onTap(x, y){
   if (busy || gameOver) return;
+  if (aiOn() && engine.turn === aiSide()) return;
   hideHint();
 
   const sq = pickPiece(x, y);
@@ -266,6 +302,7 @@ function onTap(x, y){
     if (p && p.s === engine.turn){
       if (selected === sq){ deselect(); return; }
       selectSquare(sq);
+      if (cfg.sound) SND.S.tap();
       return;
     }
     if (selected >= 0 && legal.some(m => m.to === sq)){ playMove(selected, sq); return; }
@@ -283,15 +320,19 @@ function onTap(x, y){
   else deselect();
 }
 
-async function playMove(from, to){
-  const cands = legal.filter(m => m.to === to);
+async function playMove(from, to, promoHint){
+  const cands = CH.legalMoves(engine, from).filter(m => m.to === to);
   if (!cands.length) return;
 
   let move = cands[0];
   if (cands.length > 1 && cands[0].promo){
-    const pick = await askPromotion(engine.turn);
-    if (!pick) return;
-    move = cands.find(m => m.promo === pick) || cands[0];
+    if (promoHint){
+      move = cands.find(m => m.promo === promoHint) || cands[0];
+    } else {
+      const pick = await askPromotion(engine.turn);
+      if (!pick) return;
+      move = cands.find(m => m.promo === pick) || cands[0];
+    }
   }
 
   busy = true;
@@ -313,6 +354,14 @@ async function playMove(from, to){
   const toV = C.squareToWorld(CH.fileOf(to), CH.rankOf(to));
   const isKnight = before.board[from].t === 'n';
 
+  /* звук хода */
+  if (cfg.sound){
+    if (res.castle) SND.S.castle();
+    else if (res.captured) SND.S.capture();
+    else if (move.promo) SND.S.promote();
+    else SND.S.move();
+  }
+
   const jobs = [];
   if (mover) jobs.push(tweenMove(mover, toV, isKnight));
   if (victim){
@@ -333,6 +382,7 @@ async function playMove(from, to){
   busy = false;
 
   checkEnd();
+  maybeAI();
 }
 
 /* ---------- ПРЕВРАЩЕНИЕ ---------- */
@@ -353,17 +403,101 @@ function askPromotion(side){
   });
 }
 
+/* ---------- СОПЕРНИК ---------- */
+let aiWorker = null;
+let aiWorkerBroken = false;
+let aiReqId = 0;
+const aiPending = new Map();
+
+function initWorker(){
+  if (aiWorker || aiWorkerBroken) return aiWorker;
+  try {
+    aiWorker = new Worker('./ai_worker.js', { type: 'module' });
+    aiWorker.onmessage = (e) => {
+      const p = aiPending.get(e.data && e.data.id);
+      if (p){ aiPending.delete(e.data.id); p(e.data.move); }
+    };
+    aiWorker.onerror = () => {
+      aiWorkerBroken = true;
+      for (const [, p] of aiPending) p(null);
+      aiPending.clear();
+      aiWorker = null;
+    };
+  } catch (err){
+    aiWorkerBroken = true;
+    aiWorker = null;
+  }
+  return aiWorker;
+}
+
+function requestAIMove(state, level){
+  return new Promise(res => {
+    const w = initWorker();
+    if (w){
+      const id = ++aiReqId;
+      aiPending.set(id, res);
+      w.postMessage({ id, state, level });
+      setTimeout(() => {
+        if (aiPending.has(id)){ aiPending.delete(id); res(null); }
+      }, 7000);
+      return;
+    }
+    /* запасной путь: считаем на главном потоке */
+    setTimeout(async () => {
+      try {
+        const mod = await import('./ai.js');
+        res(mod.chooseMove(state, level));
+      } catch (e){ res(null); }
+    }, 40);
+  });
+}
+
+function setThinking(on){
+  aiThinking = on;
+  const el = document.getElementById('think');
+  if (el) el.classList.toggle('on', on);
+}
+
+async function maybeAI(){
+  if (!aiOn() || gameOver || busy) return;
+  if (engine.turn !== aiSide()) return;
+
+  busy = true;
+  setThinking(true);
+
+  const snapshot = CH.cloneState(engine);
+  const mv = await requestAIMove(snapshot, cfg.level);
+
+  setThinking(false);
+  busy = false;
+
+  if (!mv || gameOver) return;
+  if (engine.turn !== aiSide()) return;
+
+  await playMove(mv.from, mv.to, mv.promo);
+}
+
 /* ---------- КОНЕЦ ПАРТИИ ---------- */
 function checkEnd(){
   const st = CH.status(engine);
   if (st.over){
     gameOver = true;
+    setThinking(false);
     const banner = document.getElementById('banner');
     const txt = document.getElementById('bannerTxt');
-    if (st.result === 'draw') txt.textContent = 'НИЧЬЯ · ' + st.reason;
-    else txt.textContent = (st.result === 'w' ? 'БЕЛЫЕ' : 'ЧЁРНЫЕ') + ' ПОБЕДИЛИ · ' + st.reason;
+    if (st.result === 'draw'){
+      txt.textContent = 'НИЧЬЯ · ' + st.reason;
+      if (cfg.sound) SND.S.draw();
+    } else {
+      txt.textContent = (st.result === 'w' ? 'БЕЛЫЕ' : 'ЧЁРНЫЕ') + ' ПОБЕДИЛИ · ' + st.reason;
+      if (cfg.sound){
+        if (aiOn()) (st.result === cfg.side ? SND.S.win() : SND.S.lose());
+        else SND.S.win();
+      }
+    }
     banner.classList.add('on');
   } else if (st.check){
+    if (cfg.sound) SND.S.check();
     const b = document.getElementById('banner');
     document.getElementById('bannerTxt').textContent = 'ШАХ!';
     b.classList.add('on');
@@ -404,6 +538,13 @@ function hideHint(){
   if (h) h.classList.add('gone');
 }
 
+function setView(side){
+  const d = Math.max(9, Math.hypot(camera.position.x, camera.position.z));
+  const y = camera.position.y;
+  camera.position.set(0, y, side === 'w' ? -d : d);
+  if (C.controls) C.controls.update();
+}
+
 function newGame(){
   engine = CH.initialState();
   undoStack = [];
@@ -413,22 +554,31 @@ function newGame(){
   legal = [];
   busy = false;
   gameOver = false;
+  setThinking(false);
   document.getElementById('banner').classList.remove('on');
+  setView(aiOn() ? cfg.side : 'w');
   syncFromEngine();
   drawMarkers();
   renderMoves();
   updateHUD();
+  maybeAI();
 }
 
 function undo(){
   if (busy || !undoStack.length) return;
-  const prev = undoStack.pop();
-  engine = prev.state;
-  lastMove = prev.lastMove;
-  sanList.pop();
+  let guard = 0;
+  while (undoStack.length && guard < 2){
+    const prev = undoStack.pop();
+    engine = prev.state;
+    lastMove = prev.lastMove;
+    sanList.pop();
+    guard++;
+    if (!aiOn() || engine.turn === cfg.side) break;
+  }
   selected = -1;
   legal = [];
   gameOver = false;
+  setThinking(false);
   document.getElementById('banner').classList.remove('on');
   syncFromEngine();
   drawMarkers();
@@ -442,6 +592,19 @@ function flip(){
   if (C.controls) C.controls.update();
 }
 
+/* ---------- ОКНО ПАРТИИ ---------- */
+function syncGameUI(){
+  document.querySelectorAll('.qbtn.g').forEach(b => b.classList.toggle('act', b.dataset.g === cfg.opponent));
+  document.querySelectorAll('.qbtn.s').forEach(b => b.classList.toggle('act', b.dataset.s === cfg.side));
+  document.querySelectorAll('.qbtn.l').forEach(b => b.classList.toggle('act', b.dataset.l === cfg.level));
+  const s = document.getElementById('optSound');
+  const h = document.getElementById('optHints');
+  if (s) s.checked = cfg.sound;
+  if (h) h.checked = cfg.hints;
+  const gb = document.getElementById('gameBtn');
+  if (gb) gb.classList.toggle('act', aiOn());
+}
+
 function wireUI(){
   document.getElementById('btnNew').addEventListener('click', newGame);
   document.getElementById('btnUndo').addEventListener('click', undo);
@@ -452,6 +615,49 @@ function wireUI(){
   document.getElementById('btnList').addEventListener('click', () => list.classList.toggle('on'));
   document.getElementById('listClose').addEventListener('click', () => list.classList.remove('on'));
 
+  /* окно партии */
+  const m2 = document.getElementById('modal2');
+  document.getElementById('gameBtn').addEventListener('click', () => m2.classList.add('on'));
+  document.getElementById('winClose2').addEventListener('click', () => m2.classList.remove('on'));
+  m2.addEventListener('click', e => { if (e.target === m2) m2.classList.remove('on'); });
+
+  document.querySelectorAll('.qbtn.g').forEach(b => {
+    b.addEventListener('click', () => {
+      if (cfg.opponent === b.dataset.g){ syncGameUI(); return; }
+      cfg.opponent = b.dataset.g;
+      saveCfg(); syncGameUI(); newGame();
+    });
+  });
+  document.querySelectorAll('.qbtn.s').forEach(b => {
+    b.addEventListener('click', () => {
+      if (cfg.side === b.dataset.s){ syncGameUI(); return; }
+      cfg.side = b.dataset.s;
+      saveCfg(); syncGameUI(); newGame();
+    });
+  });
+  document.querySelectorAll('.qbtn.l').forEach(b => {
+    b.addEventListener('click', () => {
+      cfg.level = b.dataset.l;
+      saveCfg(); syncGameUI();
+    });
+  });
+
+  const snd = document.getElementById('optSound');
+  if (snd) snd.addEventListener('change', e => {
+    cfg.sound = e.target.checked;
+    SND.setSound(cfg.sound);
+    if (cfg.sound) SND.S.tap();
+    saveCfg();
+  });
+
+  const hnt = document.getElementById('optHints');
+  if (hnt) hnt.addEventListener('change', e => {
+    cfg.hints = e.target.checked;
+    drawMarkers();
+    saveCfg();
+  });
+
+  /* тап по доске */
   let dx0 = 0, dy0 = 0, t0 = 0, armed = false;
 
   window.addEventListener('pointerdown', e => {
@@ -469,13 +675,17 @@ function wireUI(){
   }, { passive: true });
 
   window.addEventListener('resize', () => { drawMarkers(); });
+
+  /* страховка: если вкладку свернули во время хода ИИ */
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !busy && !gameOver) maybeAI();
+  });
 }
 
 /* ---------- ХУКИ СЦЕНЫ ---------- */
 C.onFrame = (now) => stepAnim(now);
 
 C.onPiecesRebuilt = () => {
-  /* убираем из сцены фигуры, созданные под превращение пешки */
   for (const g of allGroups){
     if (C.pieces.indexOf(g) < 0 && g.parent) g.parent.remove(g);
   }
@@ -485,8 +695,13 @@ C.onPiecesRebuilt = () => {
 };
 
 /* ---------- СТАРТ ---------- */
+loadCfg();
+SND.setSound(cfg.sound);
 allGroups = C.pieces.slice();
 syncFromEngine();
 renderMoves();
 updateHUD();
 wireUI();
+syncGameUI();
+setView(aiOn() ? cfg.side : 'w');
+maybeAI();
