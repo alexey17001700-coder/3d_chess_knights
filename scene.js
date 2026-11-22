@@ -222,6 +222,7 @@ function buildPieces(seg){
     pieceGroup.add(g);
     pieces.push(g);
   }
+  if (window.CHESS3D && window.CHESS3D.onPiecesRebuilt) window.CHESS3D.onPiecesRebuilt();
 }
 
 /* ---------- ПРИМЕНЕНИЕ КАЧЕСТВА ---------- */
