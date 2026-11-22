@@ -771,10 +771,21 @@ function initStart(){
   if (skip) skip.addEventListener('click', hideStart);
 
   const rl = document.getElementById('startReload');
-  if (rl) rl.addEventListener('click', () => {
-    const u = location.pathname + '?r=' + Date.now() + location.hash;
-    location.replace(u);
-    setTimeout(() => location.reload(), 400);
+  if (rl) rl.addEventListener('click', async () => {
+    /* жёсткий сброс: кэш-хранилище + сервис-воркеры + перезагрузка с новой меткой */
+    try {
+      if (window.caches){
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+    } catch (e){}
+    try {
+      if (navigator.serviceWorker){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+    } catch (e){}
+    location.replace(location.pathname + '?r=' + Date.now());
   });
 
   syncStartUI();
