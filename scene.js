@@ -487,6 +487,7 @@ window.CHESS3D = {
   get pieces(){ return pieces; },
   squareToWorld, TILE_TOP,
   setMode, applyQuality,
+  fitCamera, handleResize,
   get state(){ return state; },
   get fps(){ return fps; },
   get materials(){ return M; },
