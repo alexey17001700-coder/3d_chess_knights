@@ -767,5 +767,13 @@ renderMoves();
 updateHUD();
 wireUI();
 syncGameUI();
+initStart();
 setView(aiOn() ? cfg.side : 'w');
 maybeAI();
+
+/* кнопка «меню» в HUD — вернуть стартовый экран */
+window.CHESSGAME = {
+  start: startAs, showStart, hideStart,
+  newGame, undo, flip,
+  get cfg(){ return cfg; }
+};
