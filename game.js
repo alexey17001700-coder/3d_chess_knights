@@ -691,6 +691,61 @@ function wireUI(){
   });
 }
 
+/* ---------- СТАРТОВОЕ МЕНЮ ---------- */
+function hideStart(){
+  const st = document.getElementById('start');
+  if (st) st.classList.add('gone');
+}
+
+function showStart(){
+  const st = document.getElementById('start');
+  if (!st) return;
+  st.classList.remove('gone');
+  syncStartUI();
+}
+
+function syncStartUI(){
+  document.querySelectorAll('[data-st]').forEach(b => b.classList.toggle('act', b.dataset.st === cfg.level));
+  document.querySelectorAll('[data-ss]').forEach(b => b.classList.toggle('act', b.dataset.ss === cfg.side));
+}
+
+function startAs(opp){
+  cfg.opponent = opp;
+  saveCfg();
+  syncGameUI();
+  syncStartUI();
+  hideStart();
+  newGame();
+}
+
+function initStart(){
+  const st = document.getElementById('start');
+  if (!st) return;
+
+  document.querySelectorAll('[data-start]').forEach(b => {
+    b.addEventListener('click', () => startAs(b.dataset.start));
+  });
+
+  document.querySelectorAll('[data-st]').forEach(b => {
+    b.addEventListener('click', () => {
+      cfg.level = b.dataset.st;
+      saveCfg(); syncGameUI(); syncStartUI();
+    });
+  });
+
+  document.querySelectorAll('[data-ss]').forEach(b => {
+    b.addEventListener('click', () => {
+      cfg.side = b.dataset.ss;
+      saveCfg(); syncGameUI(); syncStartUI();
+    });
+  });
+
+  const skip = document.getElementById('startSkip');
+  if (skip) skip.addEventListener('click', hideStart);
+
+  syncStartUI();
+}
+
 /* ---------- ХУКИ СЦЕНЫ ---------- */
 C.onFrame = (now) => stepAnim(now);
 
