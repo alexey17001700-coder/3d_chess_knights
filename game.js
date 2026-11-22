@@ -7,9 +7,9 @@
    ============================================================ */
 
 import * as THREE from 'three';
-import { buildPiece } from './pieces.js';
-import * as CH from './chess.js';
-import * as SND from './sound.js';
+import { buildPiece } from './pieces.js?v=10';
+import * as CH from './chess.js?v=10';
+import * as SND from './sound.js?v=10';
 
 const C = window.CHESS3D;
 if (!C) throw new Error('CHESS3D не готов');
