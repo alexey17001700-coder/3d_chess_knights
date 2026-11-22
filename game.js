@@ -198,7 +198,7 @@ function stepAnim(now){
     b.m.scale.set(s, s, s);
     b.mat.opacity = 0.95 * (1 - k);
     if (k >= 1){
-      markerGroup.remove(b.m);
+      burstGroup.remove(b.m);
       b.mat.dispose();
       bursts.splice(i, 1);
     }
