@@ -504,4 +504,4 @@ window.CHESS3D = {
 };
 
 /* ---------- ЭТАП 2: игровая логика ---------- */
-import('./game.js?v=10').catch(e => console.error('game.js:', e));
+import('./game.js?v=11').catch(e => console.error('game.js:', e));
