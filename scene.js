@@ -44,6 +44,25 @@ const FIT = {
 };
 
 let fitDist = 20;
+function hudInsets(){
+  const h = window.innerHeight || 1;
+  let top = 0, bottom = 0;
+  const ids = ['ver', 'fps', 'turn', 'status', 'think'];
+  for (const id of ids){
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) continue;
+    const r = el.getBoundingClientRect();
+    if (r.height > 0 && r.bottom > top) top = r.bottom;
+  }
+  const bar = document.getElementById('bar');
+  if (bar){
+    const r = bar.getBoundingClientRect();
+    if (r.height > 0) bottom = Math.max(bottom, h - r.top);
+  }
+  return { top: Math.min(top + 12, h * 0.17), bottom: Math.min(bottom + 12, h * 0.17) };
+}
 /* FIT_END */
 
 x
