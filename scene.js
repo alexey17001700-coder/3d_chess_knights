@@ -6,7 +6,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { buildPiece, pieceMaterials } from './pieces.js?v=10';
+import { buildPiece, pieceMaterials } from './pieces.js?v=11';
+
+/* фактическая метка версии — берём из адреса, по которому загрузился этот файл */
+const BUILD = ((new URL(import.meta.url)).search || '?v=?').replace('?v=', 'v');
+try {
+  const vEl = document.getElementById('ver');
+  if (vEl) vEl.textContent = '3D ШАХМАТЫ · РЫЦАРСКИЙ ТУРНИР · ' + BUILD;
+} catch (e){}
 
 /* ---------- ПРЕСЕТЫ КАЧЕСТВА ---------- */
 const PRESETS = {
