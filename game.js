@@ -412,7 +412,7 @@ const aiPending = new Map();
 function initWorker(){
   if (aiWorker || aiWorkerBroken) return aiWorker;
   try {
-    aiWorker = new Worker('./ai_worker.js?v=10', { type: 'module' });
+    aiWorker = new Worker('./ai_worker.js?v=11', { type: 'module' });
     aiWorker.onmessage = (e) => {
       const d = e.data || {};
       if (d.progress){ showDepth(d.info); return; }
