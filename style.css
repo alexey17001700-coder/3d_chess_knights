@@ -31,13 +31,18 @@ html,body{
 #qual{top:calc(10px + env(safe-area-inset-top));right:calc(58px + env(safe-area-inset-right));
   color:#9fe8c8;font-weight:600;font-size:11px}
 
-#setBtn{
-  position:absolute;top:calc(10px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));
+#setBtn,#gameBtn{
+  position:absolute;top:calc(10px + env(safe-area-inset-top));
   width:40px;height:40px;border-radius:11px;font-size:18px;line-height:1;
   background:rgba(8,16,28,.62);border:1px solid rgba(90,190,255,.30);color:#8fd8ff;
   pointer-events:auto;cursor:pointer;font-family:inherit;
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:all .18s ease}
-#setBtn:active{transform:scale(.9);background:rgba(30,80,130,.7)}
+#setBtn{right:calc(58px + env(safe-area-inset-right))}
+#gameBtn{right:calc(10px + env(safe-area-inset-right));color:#ffd88f;
+  border-color:rgba(255,200,120,.34)}
+#setBtn:active,#gameBtn:active{transform:scale(.9);background:rgba(30,80,130,.7)}
+#gameBtn.act{color:#ffe9c0;border-color:rgba(255,210,140,.8);
+  box-shadow:0 0 18px rgba(255,190,90,.35)}
 
 #hint{
   position:absolute;left:50%;transform:translateX(-50%);
