@@ -430,25 +430,34 @@ function initWorker(){
   return aiWorker;
 }
 
-function requestAIMove(state, level){
+function mainThreadMove(state, level){
   return new Promise(res => {
-    const w = initWorker();
-    if (w){
-      const id = ++aiReqId;
-      aiPending.set(id, res);
-      w.postMessage({ id, state, level });
-      setTimeout(() => {
-        if (aiPending.has(id)){ aiPending.delete(id); res(null); }
-      }, 7000);
-      return;
-    }
-    /* запасной путь: считаем на главном потоке */
     setTimeout(async () => {
       try {
         const mod = await import('./ai.js');
         res(mod.chooseMove(state, level));
       } catch (e){ res(null); }
     }, 40);
+  });
+}
+
+function requestAIMove(state, level){
+  return new Promise(res => {
+    const w = initWorker();
+    if (!w){
+      mainThreadMove(state, level).then(res);
+      return;
+    }
+    const id = ++aiReqId;
+    const done = (mv) => {
+      if (!aiPending.has(id)) return;
+      aiPending.delete(id);
+      if (mv) res(mv);
+      else mainThreadMove(state, level).then(res);   /* воркер не смог — считаем сами */
+    };
+    aiPending.set(id, done);
+    w.postMessage({ id, state, level });
+    setTimeout(() => done(null), 7000);
   });
 }
 
