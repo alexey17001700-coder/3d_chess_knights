@@ -33,6 +33,17 @@ scene.background = new THREE.Color(0x05070d);
 scene.fog = new THREE.FogExp2(0x05070d, 0.010);
 const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 600);
 camera.position.set(0, 10.5, 12.5);
+/* ---------- АВТОПОДГОН ПОД ЛЮБОЙ ЭКРАН ---------- */
+const FIT = {
+  rx: 4.95,
+  ry: 4.95,
+  fill: 0.88,
+  minFill: 0.40,
+  minDist: 7.5,
+  maxDist: 40
+};
+
+let fitDist = 20;
 /* FIT_END */
 
 x
