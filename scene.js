@@ -295,6 +295,7 @@ function loadSettings(){
 
 /* ---------- ЦИКЛ РЕНДЕРА + АДАПТИВНОЕ РАЗРЕШЕНИЕ ---------- */
 let frames = 0, lastT = performance.now(), fps = 60;
+let prevT = performance.now();
 
 function adapt(){
   const p = PRESETS[state.level];
