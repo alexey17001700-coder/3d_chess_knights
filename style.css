@@ -135,7 +135,7 @@ html,body{
 @media (max-width:620px),(max-height:640px){
   .panel{padding:6px 9px;font-size:11px;border-radius:9px}
   #fps{font-size:10px}
-  #qual{font-size:10px;right:calc(52px + env(safe-area-inset-right))}
+  #qual{font-size:10px;right:calc(10px + env(safe-area-inset-right));top:calc(52px + env(safe-area-inset-top))}
   #setBtn{width:38px;height:38px;font-size:16px}
   #hint{font-size:10.5px;padding:7px 11px;max-width:90vw;line-height:1.5}
   #modal{padding:6px}
