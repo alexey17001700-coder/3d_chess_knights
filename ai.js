@@ -1,8 +1,15 @@
 /* ============================================================
    3D ШАХМАТЫ · РЫЦАРСКИЙ ТУРНИР — СОПЕРНИК (ИИ)
-   ЭТАП 3. Негамакс + альфа-бета + сортировка ходов + форсированный
-   добор взятий (quiescence). Три уровня силы.
+   Негамакс + альфа-бета + сортировка ходов + форсированный
+   добор взятий (quiescence). Четыре уровня силы.
    Работает и в Web Worker, и на главном потоке.
+
+   ВАЖНО ПРО СКОРОСТЬ:
+   — время проверяется не на каждом узле, а раз в 256 узлов;
+   — на нулевой глубине сразу идёт добор, без генерации всех ходов;
+   — лучший ход предыдущей итерации идёт первым (PV-порядок);
+   — добор берёт только взятия (allLegalCaptures), а не все ходы;
+   — жёсткий лимит по времени И по количеству узлов.
    ============================================================ */
 
 import * as CH from './chess.js';
@@ -90,61 +97,94 @@ function pstIndex(i, side){
   return side === 'w' ? (7 - r) * 8 + f : r * 8 + f;
 }
 
-/* ---------- ОЦЕНКА (со стороны того, чей ход) ---------- */
+/* ---------- ОЦЕНКА (со стороны того, чей ход) ----------
+   Один проход по доске вместо двух: король считается отдельно,
+   потому что его таблица зависит от стадии партии. */
 export function evaluate(s){
-  let npm = 0;
-  for (let i = 0; i < 64; i++){
-    const p = s.board[i];
-    if (p && p.t !== 'p' && p.t !== 'k') npm += VAL[p.t];
-  }
-  const end = npm < 1800;
+  const b = s.board;
+  let npm = 0, sc = 0, wb = 0, bb = 0;
+  let kIdx = -1, kSide = 'w';
 
-  let sc = 0;
-  let wb = 0, bb = 0;
   for (let i = 0; i < 64; i++){
-    const p = s.board[i];
+    const p = b[i];
     if (!p) continue;
-    if (p.t === 'b'){ if (p.s === 'w') wb++; else bb++; }
-    const key = p.t === 'k' ? (end ? 'kE' : 'kM') : p.t;
-    const v = VAL[p.t] + PST[key][pstIndex(i, p.s)];
-    sc += p.s === 'w' ? v : -v;
+    const t = p.t, w = p.s === 'w';
+
+    if (t === 'b'){ if (w) wb++; else bb++; }
+    if (t === 'k'){ kIdx = i; kSide = p.s; continue; }
+
+    const v = VAL[t] + PST[t][pstIndex(i, p.s)];
+    sc += w ? v : -v;
+    if (t !== 'p') npm += VAL[t];
   }
+
+  if (kIdx >= 0){
+    const kv = PST[npm < 1800 ? 'kE' : 'kM'][pstIndex(kIdx, kSide)];
+    sc += kSide === 'w' ? kv : -kv;
+  }
+
   if (wb >= 2) sc += 28;
   if (bb >= 2) sc -= 28;
 
   return s.turn === 'w' ? sc : -sc;
 }
 
-/* ---------- СОРТИРОВКА ХОДОВ ---------- */
-function orderMoves(s, moves){
-  const scored = moves.map(m => {
+/* ---------- СОРТИРОВКА ХОДОВ ----------
+   Без аллокаций: оценки в отдельном массиве, сортировка вставками.
+   pv — ход из предыдущей итерации, он идёт первым. */
+function orderMoves(s, moves, pv){
+  const n = moves.length;
+  if (n < 2) return moves;
+
+  const sc = new Array(n);
+  for (let i = 0; i < n; i++){
+    const m = moves[i];
     const victim = s.board[m.to];
     const attacker = s.board[m.from];
-    let sc = 0;
-    if (victim) sc += 1000 + VAL[victim.t] - (attacker ? VAL[attacker.t] / 12 : 0);
-    if (m.promo) sc += 800 + VAL[m.promo];
-    return { m, sc };
-  });
-  scored.sort((a, b) => b.sc - a.sc);
-  for (let i = 0; i < moves.length; i++) moves[i] = scored[i].m;
+    let v = 0;
+    if (victim) v += 1000 + VAL[victim.t] - (attacker ? VAL[attacker.t] / 12 : 0);
+    if (m.promo) v += 800 + VAL[m.promo];
+    if (pv && m.from === pv.from && m.to === pv.to && (m.promo || null) === (pv.promo || null)) v += 100000;
+    sc[i] = v;
+  }
+
+  for (let i = 1; i < n; i++){
+    const m = moves[i], v = sc[i];
+    let j = i - 1;
+    while (j >= 0 && sc[j] < v){
+      moves[j + 1] = moves[j];
+      sc[j + 1] = sc[j];
+      j--;
+    }
+    moves[j + 1] = m;
+    sc[j + 1] = v;
+  }
   return moves;
 }
 
+/* ---------- КОНТРОЛЬ ВРЕМЕНИ ----------
+   performance.now() на каждом узле дорого для телефона, поэтому
+   время смотрим раз в 256 узлов, а между ними считаем узлы. */
+function tick(ctx){
+  if ((++ctx.nodes & 255) === 0 && performance.now() > ctx.deadline) throw TIMEOUT;
+  if (ctx.nodes > ctx.maxNodes) throw TIMEOUT;
+}
+
 /* ---------- ФОРСИРОВАННЫЙ ДОБОР ВЗЯТИЙ ---------- */
-function qsearch(s, alpha, beta, qd, deadline){
-  if (performance.now() > deadline) throw TIMEOUT;
+function qsearch(s, alpha, beta, qd, ctx){
+  tick(ctx);
 
   const stand = evaluate(s);
   if (stand >= beta) return beta;
   if (stand > alpha) alpha = stand;
   if (qd <= 0) return alpha;
 
-  const moves = CH.allLegal(s).filter(m => s.board[m.to] || m.promo);
+  const moves = CH.allLegalCaptures(s);
   orderMoves(s, moves);
 
-  for (const m of moves){
-    const r = CH.makeMove(s, m);
-    const sc = -qsearch(r.state, -beta, -alpha, qd - 1, deadline);
+  for (let i = 0; i < moves.length; i++){
+    const r = CH.makeMove(s, moves[i]);
+    const sc = -qsearch(r.state, -beta, -alpha, qd - 1, ctx);
     if (sc >= beta) return beta;
     if (sc > alpha) alpha = sc;
   }
@@ -152,31 +192,42 @@ function qsearch(s, alpha, beta, qd, deadline){
 }
 
 /* ---------- НЕГАМАКС ---------- */
-function negamax(s, depth, ply, alpha, beta, deadline){
-  if (performance.now() > deadline) throw TIMEOUT;
+function negamax(s, depth, ply, alpha, beta, ctx){
+  tick(ctx);
+
+  /* сначала глубина: на нулевой сразу в добор, без генерации всех ходов */
+  if (depth <= 0) return qsearch(s, alpha, beta, ctx.qd, ctx);
 
   const moves = CH.allLegal(s);
   if (!moves.length) return CH.inCheck(s, s.turn) ? -(MATE - ply) : 0;
-  if (depth <= 0) return qsearch(s, alpha, beta, 2, deadline);
 
-  orderMoves(s, moves);
+  orderMoves(s, moves, ctx.pv[ply]);
 
   let best = -Infinity;
-  for (const m of moves){
+  for (let i = 0; i < moves.length; i++){
+    const m = moves[i];
     const r = CH.makeMove(s, m);
-    const sc = -negamax(r.state, depth - 1, ply + 1, -beta, -alpha, deadline);
-    if (sc > best) best = sc;
+    const sc = -negamax(r.state, depth - 1, ply + 1, -beta, -alpha, ctx);
+    if (sc > best){
+      best = sc;
+      ctx.pv[ply] = m;
+    }
     if (best > alpha) alpha = best;
     if (alpha >= beta) break;
   }
   return best;
 }
 
-/* ---------- УРОВНИ ---------- */
+/* ---------- УРОВНИ ----------
+   time  — жёсткий лимит раздумий в миллисекундах;
+   nodes — страховка от затяжного счёта на слабом телефоне;
+   qd    — глубина добора взятий;
+   blunder — шанс «человеческой» ошибки. */
 const LEVELS = {
-  easy:   { depth: 1, time: 260,  noise: 60, blunder: 0.30 },
-  medium: { depth: 3, time: 900,  noise: 16, blunder: 0.05 },
-  hard:   { depth: 5, time: 1900, noise: 0,  blunder: 0.00 }
+  blitz:  { depth: 2, time: 180,  noise: 45, blunder: 0.20, qd: 1, nodes: 50000 },
+  easy:   { depth: 2, time: 320,  noise: 55, blunder: 0.28, qd: 1, nodes: 80000 },
+  medium: { depth: 3, time: 650,  noise: 14, blunder: 0.05, qd: 2, nodes: 160000 },
+  hard:   { depth: 5, time: 1100, noise: 0,  blunder: 0.00, qd: 2, nodes: 300000 }
 };
 
 /* ---------- ВЫБОР ХОДА ---------- */
@@ -192,21 +243,33 @@ export function chooseMove(state, level){
     return moves[Math.floor(Math.random() * moves.length)];
   }
 
-  const deadline = performance.now() + cfg.time;
+  const ctx = {
+    deadline: performance.now() + cfg.time,
+    maxNodes: cfg.nodes,
+    nodes: 0,
+    qd: cfg.qd,
+    pv: new Array(64).fill(null)
+  };
+  const t0 = performance.now();
+
   orderMoves(state, moves);
 
   let bestMove = moves[0];
   let bestScore = -Infinity;
+  let reached = 0;
 
   for (let d = 1; d <= cfg.depth; d++){
     let localBest = null;
     let localScore = -Infinity;
     let alpha = -Infinity;
+    const scores = new Array(moves.length);
 
     try {
-      for (const m of moves){
+      for (let i = 0; i < moves.length; i++){
+        const m = moves[i];
         const r = CH.makeMove(state, m);
-        const raw = -negamax(r.state, d - 1, 1, -Infinity, -alpha, deadline);
+        const raw = -negamax(r.state, d - 1, 1, -Infinity, -alpha, ctx);
+        scores[i] = raw;
         const sc = raw + (Math.random() - 0.5) * cfg.noise;
         if (sc > localScore){ localScore = sc; localBest = m; }
         if (raw > alpha) alpha = raw;
@@ -216,9 +279,26 @@ export function chooseMove(state, level){
       break;
     }
 
-    if (localBest){ bestMove = localBest; bestScore = localScore; }
+    if (localBest){
+      bestMove = localBest;
+      bestScore = localScore;
+      reached = d;
+      /* лучший ход — вперёд, остальные по убыванию оценки: следующий
+         проход не тратит время на заведомо слабые ветки */
+      const pair = moves.map((m, i) => ({ m, s: scores[i] === undefined ? -Infinity : scores[i] }));
+      pair.sort((a, b) => b.s - a.s);
+      for (let i = 0; i < moves.length; i++) moves[i] = pair[i].m;
+    }
+
     if (bestScore > MATE - 200) break;
-    if (performance.now() > deadline) break;
+    if (performance.now() > ctx.deadline) break;
+    if (ctx.nodes > ctx.maxNodes) break;
+  }
+
+  if (typeof globalThis.__aiProgress === 'function'){
+    try {
+      globalThis.__aiProgress({ depth: reached, nodes: ctx.nodes, ms: Math.round(performance.now() - t0) });
+    } catch (e){}
   }
 
   return bestMove;
