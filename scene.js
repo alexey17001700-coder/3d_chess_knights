@@ -13,6 +13,8 @@ const BUILD = ((new URL(import.meta.url)).search || '?v=?').replace('?v=', 'v');
 try {
   const vEl = document.getElementById('ver');
   if (vEl) vEl.textContent = '3D ШАХМАТЫ · РЫЦАРСКИЙ ТУРНИР · ' + BUILD;
+  const bEl = document.getElementById('buildTag');
+  if (bEl) bEl.textContent = '3D ШАХМАТЫ · ЗАГРУЖЕНО ' + BUILD;
 } catch (e){}
 
 /* ---------- ПРЕСЕТЫ КАЧЕСТВА ---------- */
