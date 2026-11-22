@@ -31,7 +31,9 @@ const qualEl = document.getElementById('qual');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x05070d);
 scene.fog = new THREE.FogExp2(0x05070d, 0.010);
-/* CAM2 */
+const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 600);
+camera.position.set(0, 10.5, 12.5);
+/* FIT_END */
 
 x
 
