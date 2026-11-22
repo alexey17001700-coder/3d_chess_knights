@@ -295,18 +295,24 @@ export function chooseMove(state, level){
       for (let i = 0; i < moves.length; i++) moves[i] = pair[i].m;
     }
 
+    report(reached, ctx, t0);
+
     if (bestScore > MATE - 200) break;
     if (performance.now() > ctx.deadline) break;
     if (ctx.nodes > ctx.maxNodes) break;
   }
 
-  if (typeof globalThis.__aiProgress === 'function'){
-    try {
-      globalThis.__aiProgress({ depth: reached, nodes: ctx.nodes, ms: Math.round(performance.now() - t0) });
-    } catch (e){}
-  }
+  report(reached, ctx, t0);
 
   return bestMove;
+}
+
+/* отдать наружу прогресс: глубина, узлы, время */
+function report(depth, ctx, t0){
+  if (typeof globalThis.__aiProgress !== 'function') return;
+  try {
+    globalThis.__aiProgress({ depth, nodes: ctx.nodes, ms: Math.round(performance.now() - t0) });
+  } catch (e){}
 }
 
 export const AI_LEVELS = LEVELS;
