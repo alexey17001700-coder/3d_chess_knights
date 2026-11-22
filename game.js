@@ -770,6 +770,13 @@ function initStart(){
   const skip = document.getElementById('startSkip');
   if (skip) skip.addEventListener('click', hideStart);
 
+  const rl = document.getElementById('startReload');
+  if (rl) rl.addEventListener('click', () => {
+    const u = location.pathname + '?r=' + Date.now() + location.hash;
+    location.replace(u);
+    setTimeout(() => location.reload(), 400);
+  });
+
   syncStartUI();
 }
 
