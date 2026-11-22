@@ -125,7 +125,37 @@
 <div id="load">
   <h1>3D&nbsp;ШАХМАТЫ</h1>
   <div class="bar"><i></i></div>
-  <p>СБОРКА РЫЦАРСКОГО ЗАЛА…</p>
+  <p id="loadMsg">СБОРКА РЫЦАРСКОГО ЗАЛА…</p>
+  <div id="loadErr">
+    Движок 3D не загрузился.<br>
+    Нужен интернет (Three.js грузится с CDN).<br>
+    Проверь сеть и обнови страницу.
+  </div>
+</div>
+
+<!-- СТАРТОВОЕ МЕНЮ -->
+<div id="start">
+  <div class="stTitle">РЫЦАРСКИЙ ТУРНИР<small>3D ШАХМАТЫ</small></div>
+
+  <div class="stOpp">
+    <button class="stBig" data-start="ai">♟ ПРОТИВ ИИ<small>рыцарский орден думает за тебя</small></button>
+    <button class="stBig" data-start="human">♚ ДВА ИГРОКА<small>на одном экране</small></button>
+  </div>
+
+  <div class="stSect">СИЛА ИИ</div>
+  <div class="stRow">
+    <button class="stSm" data-st="easy">ЛЕГКИЙ</button>
+    <button class="stSm" data-st="medium">СРЕДНИЙ</button>
+    <button class="stSm" data-st="hard">СЛОЖНЫЙ</button>
+  </div>
+
+  <div class="stSect">ИГРАЮ ЗА</div>
+  <div class="stRow">
+    <button class="stSm" data-ss="w">БЕЛЫЕ</button>
+    <button class="stSm" data-ss="b">ЧЁРНЫЕ</button>
+  </div>
+
+  <button id="startSkip">ПРОСТО ПОСМОТРЕТЬ ДОСКУ</button>
 </div>
 
 <script type="importmap">
