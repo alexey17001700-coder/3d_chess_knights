@@ -438,7 +438,7 @@ function undo(){
 function flip(){
   const p = camera.position;
   camera.position.set(-p.x, p.y, -p.z);
-  controls.update();
+  if (C.controls) C.controls.update();
 }
 
 function wireUI(){
