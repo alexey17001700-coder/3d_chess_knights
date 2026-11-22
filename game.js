@@ -13,7 +13,6 @@ if (!C) throw new Error('CHESS3D не готов');
 
 const scene = C.scene;
 const camera = C.camera;
-const controls = C.controls;
 
 /* ---------- СОСТОЯНИЕ ---------- */
 let engine = CH.initialState();
