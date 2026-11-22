@@ -310,11 +310,15 @@ function adapt(){
 
 function loop(){
   requestAnimationFrame(loop);
+  const now = performance.now();
+  const dt = now - prevT;
+  prevT = now;
+
   controls.update();
+  if (window.CHESS3D && window.CHESS3D.onFrame) window.CHESS3D.onFrame(now, dt);
   renderer.render(scene, camera);
 
   frames++;
-  const now = performance.now();
   if (now - lastT >= 1000){
     fps = Math.round(frames * 1000 / (now - lastT));
     frames = 0; lastT = now;
