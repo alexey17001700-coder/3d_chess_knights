@@ -473,6 +473,10 @@ function wireUI(){
 C.onFrame = (now) => stepAnim(now);
 
 C.onPiecesRebuilt = () => {
+  /* убираем из сцены фигуры, созданные под превращение пешки */
+  for (const g of allGroups){
+    if (C.pieces.indexOf(g) < 0 && g.parent) g.parent.remove(g);
+  }
   allGroups = C.pieces.slice();
   syncFromEngine();
   drawMarkers();
