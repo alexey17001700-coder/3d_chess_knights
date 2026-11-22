@@ -357,7 +357,8 @@ html,body{
 
 .stSect{font-size:9.5px;letter-spacing:2.6px;color:#5f7f99;font-weight:700;margin-top:6px}
 
-.stRow{display:flex;gap:7px;width:min(420px,92vw)}
+.stRow{display:flex;gap:7px;width:min(420px,92vw);flex-wrap:wrap}
+.stRow .stSm{flex:1 1 0;min-width:62px}
 .stSm{
   flex:1;padding:11px 6px;border-radius:11px;cursor:pointer;font-family:inherit;
   font-size:11px;letter-spacing:1.4px;font-weight:700;color:#7fa6c0;
