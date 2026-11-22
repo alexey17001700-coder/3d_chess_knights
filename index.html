@@ -86,6 +86,42 @@
   </div>
 </div>
 
+<div id="modal2">
+  <div class="win">
+    <div class="winHead">
+      <div class="winTitle">ПАРТИЯ<small>соперник, сторона и звук</small></div>
+      <button class="winClose" id="winClose2">✕</button>
+    </div>
+    <div class="winBody">
+      <div class="sect">СОПЕРНИК</div>
+      <div class="qgrid two">
+        <button class="qbtn g" data-g="human">ДВА ИГРОКА<small>на одном экране</small></button>
+        <button class="qbtn g" data-g="ai">ПРОТИВ ИИ<small>рыцарский орден</small></button>
+      </div>
+
+      <div class="sect">ИГРАЮ ЗА</div>
+      <div class="qgrid two">
+        <button class="qbtn s" data-s="w">БЕЛЫЕ<small>первый ход мой</small></button>
+        <button class="qbtn s" data-s="b">ЧЁРНЫЕ<small>первым идёт ИИ</small></button>
+      </div>
+
+      <div class="sect">СИЛА ИИ</div>
+      <div class="qgrid three">
+        <button class="qbtn l" data-l="easy">ЛЕГКИЙ<small>ошибается</small></button>
+        <button class="qbtn l" data-l="medium">СРЕДНИЙ<small>считает 3 хода</small></button>
+        <button class="qbtn l" data-l="hard">СЛОЖНЫЙ<small>считает глубоко</small></button>
+      </div>
+
+      <div class="rows">
+        <label class="row"><span>Звук</span><input type="checkbox" id="optSound" checked></label>
+        <label class="row"><span>Подсветка ходов</span><input type="checkbox" id="optHints" checked></label>
+      </div>
+
+      <div class="note">Смена соперника или стороны начинает новую партию. Сила ИИ влияет только на его ходы — правила одинаковы для всех.</div>
+    </div>
+  </div>
+</div>
+
 <div id="load">
   <h1>3D&nbsp;ШАХМАТЫ</h1>
   <div class="bar"><i></i></div>
