@@ -362,7 +362,6 @@ function checkEnd(){
     else txt.textContent = (st.result === 'w' ? 'БЕЛЫЕ' : 'ЧЁРНЫЕ') + ' ПОБЕДИЛИ · ' + st.reason;
     banner.classList.add('on');
   } else if (st.check){
-    burst(0, 0, 0x000000);
     const b = document.getElementById('banner');
     document.getElementById('bannerTxt').textContent = 'ШАХ!';
     b.classList.add('on');
