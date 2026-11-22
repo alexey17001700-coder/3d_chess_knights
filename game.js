@@ -641,7 +641,7 @@ function wireUI(){
     b.addEventListener('click', () => {
       if (cfg.side === b.dataset.s){ syncGameUI(); return; }
       cfg.side = b.dataset.s;
-      saveCfg(); syncGameUI(); newGame();
+      saveCfg(); syncGameUI(); m2.classList.remove('on'); newGame();
     });
   });
   document.querySelectorAll('.qbtn.l').forEach(b => {
