@@ -29,6 +29,8 @@ let gameOver = false;
 /* ---------- МАРКЕРЫ ---------- */
 const markerGroup = new THREE.Group();
 scene.add(markerGroup);
+const burstGroup = new THREE.Group();
+scene.add(burstGroup);
 
 const matSel  = new THREE.MeshBasicMaterial({ color: 0xffc24d, transparent: true, opacity: 0.26, depthWrite: false });
 const matDot  = new THREE.MeshBasicMaterial({ color: 0x5ce4ff, transparent: true, opacity: 0.90, depthWrite: false, side: THREE.DoubleSide });
