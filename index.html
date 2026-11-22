@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#05070d">
+<meta name="format-detection" content="telephone=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>3D Шахматы — Рыцарский турнир</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app"></div>
+
+<div id="hud">
+  <div class="panel" id="ver">3D ШАХМАТЫ · РЫЦАРСКИЙ ТУРНИР</div>
+  <div class="panel" id="fps">-- FPS</div>
+  <div class="panel" id="qual">ГРАФИКА: АВТО</div>
+  <button id="setBtn" title="Настройки графики">⚙</button>
+  <div id="hint">Вращай сцену пальцем · щипок — приблизить</div>
+</div>
+
+<div id="modal">
+  <div class="win">
+    <div class="winHead">
+      <div class="winTitle">НАСТРОЙКИ ГРАФИКИ<small>подбери под свой телефон</small></div>
+      <button class="winClose" id="winClose">✕</button>
+    </div>
+    <div class="winBody">
+      <div class="qgrid">
+        <button class="qbtn" data-q="auto">АВТО<small>само под устройство</small></button>
+        <button class="qbtn" data-q="low">НИЗКОЕ<small>максимум FPS</small></button>
+        <button class="qbtn" data-q="medium">СРЕДНЕЕ<small>баланс</small></button>
+        <button class="qbtn" data-q="high">ВЫСОКОЕ<small>тени и отражения</small></button>
+        <button class="qbtn" data-q="ultra">УЛЬТРА<small>для мощных</small></button>
+      </div>
+
+      <div class="rows">
+        <label class="row"><span>Тени</span><input type="checkbox" id="optShadow" checked></label>
+        <label class="row"><span>Отражения (окружение)</span><input type="checkbox" id="optEnv" checked></label>
+        <label class="row"><span>Звёздное небо</span><input type="checkbox" id="optStars" checked></label>
+        <label class="row"><span>Сглаживание</span><input type="checkbox" id="optAA" checked></label>
+        <label class="row"><span>Авто-разрешение (держать FPS)</span><input type="checkbox" id="optAdapt" checked></label>
+      </div>
+
+      <div class="note">Авторежим сам выберет уровень под устройство и будет следить за FPS: если проседает — снизит разрешение, если есть запас — вернёт.</div>
+    </div>
+  </div>
+</div>
+
+<div id="load">
+  <h1>3D&nbsp;ШАХМАТЫ</h1>
+  <div class="bar"><i></i></div>
+  <p>СБОРКА РЫЦАРСКОГО ЗАЛА…</p>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="scene.js"></script>
+
+</body>
+</html>
