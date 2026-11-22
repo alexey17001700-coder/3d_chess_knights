@@ -166,6 +166,18 @@
   }
 }
 </script>
+<script>
+/* страховка: если 3D-движок не поднялся — сказать об этом, а не висеть на загрузке */
+setTimeout(function(){
+  var l = document.getElementById('load');
+  if (l && !l.classList.contains('gone')){
+    var m = document.getElementById('loadMsg');
+    var e = document.getElementById('loadErr');
+    if (m) m.textContent = 'ЗАГРУЗКА ЗАВИСЛА';
+    if (e) e.style.display = 'block';
+  }
+}, 9000);
+</script>
 <script type="module" src="scene.js"></script>
 
 </body>
