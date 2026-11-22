@@ -157,7 +157,7 @@ function burst(x, z, color){
   const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide });
   const m = flat(new THREE.Mesh(geoBurst, mat), 0.02);
   m.position.x = x; m.position.z = z;
-  markerGroup.add(m);
+  burstGroup.add(m);
   bursts.push({ m, mat, t0: performance.now(), dur: 520 });
 }
 
