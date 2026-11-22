@@ -369,6 +369,19 @@ html,body{
   color:#eafbff;background:linear-gradient(180deg,rgba(40,140,220,.45),rgba(20,70,120,.35));
   border-color:rgba(120,225,255,.8);box-shadow:0 0 18px rgba(60,180,255,.34)}
 
+#startReload{
+  margin-top:6px;
+  padding:9px 16px;
+  font:600 11px/1 ui-monospace,monospace;
+  letter-spacing:.09em;
+  color:#7fe3b0;
+  background:rgba(20,40,32,.72);
+  border:1px solid rgba(70,220,150,.42);
+  border-radius:10px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+#startReload:active{transform:scale(.97)}
 #startSkip{
   margin-top:8px;padding:10px 16px;border-radius:10px;cursor:pointer;font-family:inherit;
   background:none;border:1px solid rgba(90,190,255,.20);color:#6f8ea6;
@@ -405,7 +418,20 @@ html,body{
   .stBig small{font-size:8.5px;margin-top:4px}
   .stRow{width:min(600px,94vw)}
   .stSm{padding:9px 5px;font-size:9.5px}
-  #startSkip{margin-top:4px;padding:8px 14px}
+  #startReload{
+  margin-top:6px;
+  padding:9px 16px;
+  font:600 11px/1 ui-monospace,monospace;
+  letter-spacing:.09em;
+  color:#7fe3b0;
+  background:rgba(20,40,32,.72);
+  border:1px solid rgba(70,220,150,.42);
+  border-radius:10px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+#startReload:active{transform:scale(.97)}
+#startSkip{margin-top:4px;padding:8px 14px}
 }
 
 @media (max-width:360px){
