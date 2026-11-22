@@ -634,7 +634,7 @@ function wireUI(){
     b.addEventListener('click', () => {
       if (cfg.opponent === b.dataset.g){ syncGameUI(); return; }
       cfg.opponent = b.dataset.g;
-      saveCfg(); syncGameUI(); newGame();
+      saveCfg(); syncGameUI(); m2.classList.remove('on'); newGame();
     });
   });
   document.querySelectorAll('.qbtn.s').forEach(b => {
