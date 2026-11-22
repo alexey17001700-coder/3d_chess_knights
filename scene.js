@@ -31,6 +31,7 @@ const qualEl = document.getElementById('qual');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x05070d);
 scene.fog = new THREE.FogExp2(0x05070d, 0.010);
+/* CAMERA_PLACEHOLDER */
 
 x
 
