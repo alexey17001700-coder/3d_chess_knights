@@ -414,8 +414,10 @@ function initWorker(){
   try {
     aiWorker = new Worker('./ai_worker.js', { type: 'module' });
     aiWorker.onmessage = (e) => {
-      const p = aiPending.get(e.data && e.data.id);
-      if (p){ aiPending.delete(e.data.id); p(e.data.move); }
+      const d = e.data || {};
+      if (d.progress){ showDepth(d.info); return; }
+      const p = aiPending.get(d.id);
+      if (p){ aiPending.delete(d.id); p(d.move); }
     };
     aiWorker.onerror = () => {
       aiWorkerBroken = true;
