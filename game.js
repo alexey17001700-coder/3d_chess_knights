@@ -436,7 +436,7 @@ function mainThreadMove(state, level){
   return new Promise(res => {
     setTimeout(async () => {
       try {
-        const mod = await import('./ai.js?v=10');
+        const mod = await import('./ai.js?v=11');
         /* считаем на главном потоке — режем время, чтобы сцена не замерла */
         globalThis.__aiTimeCap = 450;
         const mv = mod.chooseMove(state, level);
