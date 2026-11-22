@@ -599,9 +599,14 @@ function undo(){
 }
 
 function flip(){
-  const p = camera.position;
-  camera.position.set(-p.x, p.y, -p.z);
-  if (C.controls) C.controls.update();
+  const cur = camera.position.z < 0 ? 'w' : 'b';
+  const next = cur === 'w' ? 'b' : 'w';
+  if (C.fitCamera) C.fitCamera({ side: next });
+  else {
+    const p = camera.position;
+    camera.position.set(-p.x, p.y, -p.z);
+    if (C.controls) C.controls.update();
+  }
 }
 
 /* ---------- ОКНО ПАРТИИ ---------- */
