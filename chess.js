@@ -286,6 +286,23 @@ export function allLegal(s){
   return res;
 }
 
+/* Только взятия, взятия на проходе и превращения — для форсированного
+   добора. Тихие ходы не проверяются на легальность, поэтому генерация
+   в разы дешевле allLegal. */
+export function allLegalCaptures(s){
+  const res = [];
+  for (let i = 0; i < 64; i++){
+    const p = s.board[i];
+    if (!p || p.s !== s.turn) continue;
+    for (const m of pseudo(s, i)){
+      if (!s.board[m.to] && !m.promo && m.to !== s.ep) continue;
+      const r = makeMove(s, m);
+      if (!inCheck(r.state, s.turn)) res.push(m);
+    }
+  }
+  return res;
+}
+
 /* ---------- состояние партии ---------- */
 export function insufficientMaterial(s){
   const list = [];
