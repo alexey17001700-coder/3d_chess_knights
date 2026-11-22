@@ -243,8 +243,13 @@ export function chooseMove(state, level){
     return moves[Math.floor(Math.random() * moves.length)];
   }
 
+  /* страховка: если счёт идёт на главном потоке, время режем,
+     чтобы сцена не замирала надолго */
+  const cap = globalThis.__aiTimeCap;
+  const time = (typeof cap === 'number' && cap > 0) ? Math.min(cfg.time, cap) : cfg.time;
+
   const ctx = {
-    deadline: performance.now() + cfg.time,
+    deadline: performance.now() + time,
     maxNodes: cfg.nodes,
     nodes: 0,
     qd: cfg.qd,
