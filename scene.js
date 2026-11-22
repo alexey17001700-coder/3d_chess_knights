@@ -405,7 +405,8 @@ boot();
 
 /* ---------- ПУБЛИЧНЫЙ API (для ЭТАПА 2) ---------- */
 window.CHESS3D = {
-  THREE, scene, camera, controls,
+  THREE, scene, camera,
+  get controls(){ return controls; },
   get renderer(){ return renderer; },
   boardGroup, pieceGroup,
   get pieces(){ return pieces; },
