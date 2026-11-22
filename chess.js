@@ -295,7 +295,6 @@ export function insufficientMaterial(s){
   }
   if (list.length === 0) return true;
   if (list.length === 1 && (list[0] === 'n' || list[0] === 'b')) return true;
-  if (list.length === 2 && list[0] === 'b' && list[1] === 'b') return true;
   return false;
 }
 
